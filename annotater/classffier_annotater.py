@@ -9,9 +9,10 @@ import argparse
 import cv2
 import os
 import sys
-
+from tkinter import *
+from PIL import Image, ImageTk
 parser = argparse.ArgumentParser()
-parser.add_argument("-c", "--classnum", type=int, default=2)
+parser.add_argument("-c", "--classnum", type=int, default=8)
 parser.add_argument("-b", "--basedir", type=str, default=os.path.join(os.curdir,"dataset"))
 
 args = vars(parser.parse_args())
@@ -24,34 +25,51 @@ for classnum in range(1,args["classnum"]+1):
     if not os.path.isdir(classdir):
         os.mkdir(classdir)
     imgnums[classnum] = len(os.listdir(classdir))
-
 print("imgnums", imgnums)
 
+def processing(taken_img,taken_imge,name_in_class):
+
+    class_path = os.path.join(os.curdir,str(name_in_class))
+    taken_imge.save(os.path.join(class_path,str(imgnums[classnum])+".jpg"))
+    imgnums[name_in_class] += 1
+    os.remove(os.path.join(args["basedir"],taken_img))
+
 for img in os.listdir(args["basedir"]):
-    cv2.namedWindow("image", flags=cv2.WINDOW_NORMAL)
-    cv2.resizeWindow('image', 1000, 1000)
-    image = cv2.imread(os.path.join(args["basedir"], img))
-    cv2.imshow("image", image) #yakınlaştırıp uzaklaştırabilen ekra)
+    window= Tk()
+    window.geometry("1000x1500")
+    imge = (Image.open(os.path.join(args["basedir"],img))).resize((1000,800))
+    image = ImageTk.PhotoImage(imge)
+    lbl  = Label(window,image = image)
+    lbl.place(x=0,y=0)
+    x_coordinate = -100
+    y_coordinate = 750
+    rel_x = 0.1
+    rel_y = 0.05
+    rel_height = 0.05
+    rel_width = 0.1
+    for button_number in range(1,args["classnum"]+1):
 
-    keyboard = cv2.waitKey()
-    if keyboard == 27: sys.exit()
+        if button_number % 7 != 0 :
 
-    for classnum in range(1, args["classnum"]+1):
-        if keyboard == ord(str(classnum)):
-            class_path = os.path.join(os.curdir, str(classnum))
-            cv2.imwrite(os.path.join(class_path,str(imgnums[classnum])+".jpg"), image)
-            imgnums[classnum] += 1
-            #delete image on basedir
-            os.remove(os.path.join(args["basedir"], img))
-            cv2.destroyAllWindows()
+            button = Button(window, text = button_number ,command =lambda : processing(img,imge,button_number))
+            button.place(x = x_coordinate, y = y_coordinate,relx = rel_x,rely = rel_y,
+                         relheight = rel_height,relwidth = rel_width)
 
-cv2.destroyAllWindows()
+
+            x_coordinate += 150
+        else :
+            button = Button(window, text = button_number,command = lambda : processing(img,imge,button_number))
+            button.place(x = x_coordinate, y = y_coordinate,relx = rel_x,rely = rel_y,
+                         relheight = rel_height,relwidth = rel_width)
+
+            x_coordinate = -100
+            y_coordinate += 75
+
+    window.mainloop()
 
 print("Done!")
 for classnum in range(1,args["classnum"]+1):
     print("[INFO] Class {} have {} images".format(classnum, imgnums[classnum]))
-
-
 
 
 
