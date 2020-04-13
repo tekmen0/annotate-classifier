@@ -5,6 +5,8 @@
 #assigns each classs image with keyboard
 #deletes each assigned image on base dataset
 
+#how to use?
+
 import argparse
 import cv2
 import os
@@ -14,7 +16,7 @@ from PIL import Image, ImageTk
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-c", "--classnum", type=int, default=8)
+parser.add_argument("-c", "--classnum", type=int, default=2)
 parser.add_argument("-b", "--basedir", type=str, default=os.path.join(os.curdir,"dataset"))
 
 args = vars(parser.parse_args())
@@ -29,21 +31,23 @@ for classnum in range(1,args["classnum"]+1):
     imgnums[classnum] = len(os.listdir(classdir))
 print("imgnums", imgnums)
 
-def processing(taken_img,taken_imge,name_in_class):
+def processing(img_file_name,taken_image,name_in_class):
     class_path = os.path.join(os.curdir,str(name_in_class))
-    taken_imge.save(os.path.join(class_path,str(imgnums[classnum])+".jpg"))
+    taken_image.save(os.path.join(class_path,img_file_name))
     imgnums[name_in_class] += 1
-    os.remove(os.path.join(args["basedir"],taken_img))
+    os.remove(os.path.join(args["basedir"],img_file_name))
     window.destroy()
 
-global window
+global window #bunu global koymamızın özel bir sebebi var mı?
 
-for img in os.listdir(args["basedir"]):
+for img_file_name in os.listdir(args["basedir"]):
+    #build window
     window = Tk()
     window.geometry("1000x1500")
-    imge = (Image.open(os.path.join(args["basedir"],img))).resize((1000,800))
-    image = ImageTk.PhotoImage(imge)
-    lbl  = Label(window,image = image)
+    img_path = os.path.join(args["basedir"],img_file_name)
+    image = Image.open(img_path).resize((1000,800)) #ımageyi doğru yüklüyor
+    photoimage = ImageTk.PhotoImage(image)
+    lbl  = Label(window,image = photoimage)
     lbl.place(x=0,y=0)
     x_coordinate = 75
     y_coordinate = 750
@@ -51,21 +55,19 @@ for img in os.listdir(args["basedir"]):
     rel_y = 0.05
     rel_height = 0.05
     rel_width = 0.1
+
+    #place buttons on window
     for button_number in range(1,args["classnum"]+1):
-        if button_number % 5 != 0 :
-            button = Button(window, text = button_number ,command = lambda button_number=button_number:
-                         (processing(img,imge,button_number)))
-            button.place(x = x_coordinate, y = y_coordinate,relx = rel_x,rely = rel_y,
-                         relheight = rel_height,relwidth = rel_width)
+
+        button = Button(window, text=button_number, command=lambda button_number=button_number:
+        (processing(img_file_name, image, button_number)))
+        button.place(x=x_coordinate, y=y_coordinate, relx=rel_x, rely=rel_y,
+                     relheight=rel_height, relwidth=rel_width)
 
 
+        if button_number % 5 != 0:
             x_coordinate += 150
-        else :
-            button = Button(window, text = button_number ,command = lambda button_number=button_number:
-                         (processing(img,imge,button_number)))
-            button.place(x = x_coordinate, y = y_coordinate,relx = rel_x,rely = rel_y,
-                         relheight = rel_height,relwidth = rel_width)
-
+        else:
             x_coordinate = 75
             y_coordinate += 75
 
@@ -75,5 +77,7 @@ for img in os.listdir(args["basedir"]):
 print("Done!")
 for classnum in range(1,args["classnum"]+1):
     print("[INFO] Class {} have {} images".format(classnum, imgnums[classnum]))
+
+
 
 
