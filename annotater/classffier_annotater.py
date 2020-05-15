@@ -1,4 +1,3 @@
-#madem sys improt ettim argümanı neden sys ile almıyorum değil mi :D
 #opens dataset
 #checks each image in dataset
 #automatically build class dirs for object detection
